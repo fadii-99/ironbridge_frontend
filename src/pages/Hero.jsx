@@ -30,13 +30,13 @@ const Hero = () => {
       <section className="flex flex-col items-center justify-center text-center sm:gap-10 gap-7 min-h-screen px-6 text-white md:max-w-[80%] max-w-[95%] mx-auto">
         {/* Heading */}
         <h1 className="md:text-7xl text-5xl font-extrabold sm:leading-tight leading-15">
-          <span className="text-yellow-300">Industry</span> Cross Reference
+          <span className="text-yellow-300">Industrial</span> Cross Reference
         </h1>
 
         {/* Paragraph */}
         <p className="md:text-md sm:text-sm text-xs text-gray-300 leading-relaxed">
-          A powerful tool to quickly search and reference industrial components. <br />
-          Streamline your workflow with efficiency and accuracy.
+         A powerful tool to quickly search and reference industrial products. <br />
+         Search faster. Cross-reference smarter. Streamline sourcing
         </p>
 
         {/* 👇 Animated Downward Arrow */}

@@ -37,7 +37,7 @@ export default function Navbar() {
     >
       {/* Left: Logo */}
       <div className="flex items-center gap-2">
-        <img src={logo} alt="website-logo" className="h-auto w-[4rem]" />
+        <img src={logo} alt="website-logo" className="h-auto w-[5.5rem]" />
       </div>
 
       {/* Mid: Desktop Links */}
@@ -54,7 +54,7 @@ export default function Navbar() {
         </li>
         <li>
           <a href="#" className="hover:text-yellow-300 transition text-sm font-light opacity-80">
-            Link
+            Contact us
           </a>
         </li>
       </ul>
@@ -117,7 +117,7 @@ export default function Navbar() {
             </li>
             <li>
               <a href="#" className="block hover:text-yellow-300 transition">
-                Link
+                Contact us
               </a>
             </li>
           </ul>
