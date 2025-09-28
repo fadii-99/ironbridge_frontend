@@ -10,6 +10,9 @@ const ForgetPassword = lazy(() => import("./../src/pages/ForgetPassword"));
 const VerifyOTP = lazy(() => import("./../src/pages/VerifyOTP"));
 const CreatePassword = lazy(() => import("./../src/pages/CreatePassword"));
 const SuccessScreen = lazy(() => import("./../src/pages/SuccessScreen"));
+const Contact = lazy(() => import("./../src/pages/Contact"));
+const Subscription = lazy(() => import("./../src/pages/Subscription"));
+
 
 // 🔥 Admin imports
 // const AdminParent = lazy(() => import("./AdminParent"));
@@ -83,6 +86,24 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={""}>
             <Hero />
+          </Suspense>
+        ),
+      }
+      ,
+      {
+        path: "Contact",
+        element: (
+          <Suspense fallback={""}>
+            <Contact />
+          </Suspense>
+        ),
+      }
+      ,
+      {
+        path: "Subscription",
+        element: (
+          <Suspense fallback={""}>
+            <Subscription />
           </Suspense>
         ),
       },

@@ -62,7 +62,7 @@ const Hero = () => {
               Your Plan : <span className="text-white"> Basic</span>
             </label>
             <label className="md:text-xs text-[11px] text-gray-400 font-light">
-              Total Available Searches : <span className="text-white">500</span>
+              Total Available Searches : <span className="text-white">1</span>
             </label>
           </div>
         </div>

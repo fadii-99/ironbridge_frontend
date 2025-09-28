@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // 👈 import navigate
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, NavLink } from "react-router-dom"; 
 import { FiLogOut } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
 import { HiOutlineMenu, HiX } from "react-icons/hi";
@@ -9,25 +9,46 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const navigate = useNavigate(); // 👈 hook use kiya
+  const navigate = useNavigate();
+
+  const dropdownRef = useRef(null);
 
   // scroll detection
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
+
   const handleLogout = () => {
     // future me auth clear karna hoga
-    navigate("/"); // 👈 abhi login page pe redirect karega
+    navigate("/");
   };
+
+  // navLink classes helper
+  const linkClasses = ({ isActive }) =>
+    `transition text-sm font-light ${
+      isActive ? "text-yellow-300" : "opacity-80 hover:text-yellow-300"
+    }`;
 
   return (
     <nav
@@ -43,19 +64,19 @@ export default function Navbar() {
       {/* Mid: Desktop Links */}
       <ul className="hidden md:flex items-center gap-8 text-sm font-medium">
         <li>
-          <a href="#" className="hover:text-yellow-300 transition text-sm font-light opacity-80">
+          <NavLink to="/Home" end className={linkClasses}>
             Home
-          </a>
+          </NavLink>
         </li>
         <li>
-          <a href="#" className="hover:text-yellow-300 transition text-sm font-light opacity-80">
+          <NavLink to="/Home/Subscription" className={linkClasses}>
             Subscription
-          </a>
+          </NavLink>
         </li>
         <li>
-          <a href="#" className="hover:text-yellow-300 transition text-sm font-light opacity-80">
+          <NavLink to="/Home/Contact" className={linkClasses}>
             Contact us
-          </a>
+          </NavLink>
         </li>
       </ul>
 
@@ -66,11 +87,15 @@ export default function Navbar() {
           onClick={() => setMenuOpen(!menuOpen)}
           className="md:hidden p-2 rounded hover:bg-white/10 transition"
         >
-          {menuOpen ? <HiX className="h-6 w-6" /> : <HiOutlineMenu className="h-6 w-6" />}
+          {menuOpen ? (
+            <HiX className="h-6 w-6" />
+          ) : (
+            <HiOutlineMenu className="h-6 w-6" />
+          )}
         </button>
 
         {/* Profile */}
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setOpen(!open)}
             className="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-300/10 transition"
@@ -106,19 +131,32 @@ export default function Navbar() {
         <div className="absolute top-full left-0 w-full bg-black/95 text-white md:hidden shadow-lg">
           <ul className="flex flex-col px-6 py-4 space-y-3 text-sm font-medium">
             <li>
-              <a href="#" className="block hover:text-yellow-300 transition">
+              <NavLink
+                to="/Home"
+                end
+                className={linkClasses}
+                onClick={() => setMenuOpen(false)}
+              >
                 Home
-              </a>
+              </NavLink>
             </li>
             <li>
-              <a href="#" className="block hover:text-yellow-300 transition">
+              <NavLink
+                to="/Home/Subscription"
+                className={linkClasses}
+                onClick={() => setMenuOpen(false)}
+              >
                 Subscription
-              </a>
+              </NavLink>
             </li>
             <li>
-              <a href="#" className="block hover:text-yellow-300 transition">
+              <NavLink
+                to="/Home/Contact"
+                className={linkClasses}
+                onClick={() => setMenuOpen(false)}
+              >
                 Contact us
-              </a>
+              </NavLink>
             </li>
           </ul>
         </div>
