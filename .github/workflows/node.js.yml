@@ -1,0 +1,51 @@
+name: React CI & Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout code from repo
+    - uses: actions/checkout@v4
+
+    # Step 2: Deploy React App via SSH
+    - name: Deploy React App
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: root
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        script: |
+          APP_DIR=/home/apps/frontend
+
+          echo ">>> Creating app directory if missing"
+          mkdir -p $APP_DIR
+
+          echo ">>> Cloning repo if missing"
+          if [ ! -d "$APP_DIR/.git" ]; then
+            git clone https://github.com/${{ github.repository }} $APP_DIR
+          fi
+
+          echo ">>> Fetching latest code"
+          cd $APP_DIR
+          git fetch origin main
+          git reset --hard origin/main
+
+          echo ">>> Installing dependencies"
+          npm ci
+
+          echo ">>> Building production files"
+          npm run build
+
+          echo ">>> Deploying build to Nginx"
+          rm -rf /var/www/frontend
+          cp -r dist /var/www/frontend
+
+          echo ">>> Restarting Nginx"
+          systemctl restart nginx
+
+          echo ">>> Deployment completed!"
