@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, NavLink } from "react-router-dom"; 
-import { FiLogOut } from "react-icons/fi";
+import { useNavigate, NavLink } from "react-router-dom";
+import { FiLogOut, FiEdit } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
 import { HiOutlineMenu, HiX } from "react-icons/hi";
 import logo from "./../assets/logo.png";
+import { useUser } from "./../context/UserProvider"; // 👈 import user context
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -12,6 +13,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const dropdownRef = useRef(null);
+  const { user } = useUser(); // 👈 get user profile
 
   // scroll detection
   useEffect(() => {
@@ -40,9 +42,13 @@ export default function Navbar() {
   }, [open]);
 
   const handleLogout = () => {
-    // future me auth clear karna hoga
-    navigate("/");
+    localStorage.removeItem("Access-Token"); // 👈 clear token
+    navigate("/"); // back to login
   };
+
+  // const handleEditProfile = () => {
+  //   navigate("/Home/EditProfile"); // 👈 navigate to edit profile page
+  // };
 
   // navLink classes helper
   const linkClasses = ({ isActive }) =>
@@ -94,7 +100,7 @@ export default function Navbar() {
           )}
         </button>
 
-        {/* Profile */}
+        {/* Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setOpen(!open)}
@@ -105,13 +111,25 @@ export default function Navbar() {
 
           {open && (
             <div className="absolute right-0 mt-3 w-64 bg-black/80 text-gray-200 shadow-2xl rounded-xl p-3 z-50 border border-white/20">
-              {/* Name + occupation */}
+              {/* ✅ Name + Email */}
               <div className="px-3 py-2">
-                <div className="text-md font-medium">Usama Kamran</div>
-                <div className="text-[11px] text-gray-400 mt-1">Electrician</div>
+                <div className="text-md font-medium">
+                  {user?.user?.full_name || "Guest User"}
+                </div>
+                <div className="text-[11px] text-gray-400 mt-1">
+                  {user?.user?.email || "guest@example.com"}
+                </div>
               </div>
 
               <div className="h-px bg-white/10 my-2" />
+
+              {/* Edit Profile */}
+              <button
+                className="flex items-center gap-3 px-4 py-2 text-blue-400 hover:bg-gray-200/10 rounded-lg transition cursor-pointer w-full"
+              >
+                <FiEdit className="text-lg" />
+                <span className="text-sm font-medium">Edit Profile</span>
+              </button>
 
               {/* Logout */}
               <button

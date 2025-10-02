@@ -36,7 +36,7 @@ const Hero = () => {
         {/* Paragraph */}
         <p className="md:text-md sm:text-sm text-xs text-gray-300 leading-relaxed">
          A powerful tool to quickly search and reference industrial products. <br />
-         Search faster. Cross-reference smarter. Streamline sourcing
+         Search faster. Cross-reference smarter. Streamline sourcing.
         </p>
 
         {/* 👇 Animated Downward Arrow */}
@@ -50,7 +50,7 @@ const Hero = () => {
               <FaSearch className="text-gray-400 sm:mr-5 mr-3 text-sm" />
               <input
                 type="text"
-                placeholder="Enter parts number"
+                placeholder="Enter part number"
                 className="w-full py-4 text-white sm:text-sm text-xs placeholder-gray-400 outline-none bg-transparent"
               />
             </div>

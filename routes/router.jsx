@@ -1,32 +1,27 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
+import Loader from "./../src/components/Loader";
 
-// Existing imports...
+
+
 const ParentElement = lazy(() => import("./ParentElement"));
 const Hero = lazy(() => import("./../src/pages/Hero"));
 const Login = lazy(() => import("./../src/pages/Login"));
 const Signup = lazy(() => import("./../src/pages/Signup"));
 const ForgetPassword = lazy(() => import("./../src/pages/ForgetPassword"));
-const VerifyOTP = lazy(() => import("./../src/pages/VerifyOTP"));
 const CreatePassword = lazy(() => import("./../src/pages/CreatePassword"));
 const SuccessScreen = lazy(() => import("./../src/pages/SuccessScreen"));
 const Contact = lazy(() => import("./../src/pages/Contact"));
 const Subscription = lazy(() => import("./../src/pages/Subscription"));
 
+const EmailVerified = lazy(() => import("./../src/pages/EmailVerified"));
 
-// 🔥 Admin imports
-// const AdminParent = lazy(() => import("./AdminParent"));
-// const AdminDashboard = lazy(() => import("./../src/pages/AdminDashboard"));
-// const AdminUsers = lazy(() => import("./../src/pages/AdminUsers"));
-// const AdminParts = lazy(() => import("./../src/pages/AdminParts"));
-// const AdminAnalytics = lazy(() => import("./../src/pages/AdminAnalytics"));
 
 const router = createBrowserRouter([
-  // Public
   {
     path: "/",
     element: (
-      <Suspense fallback={""}>
+      <Suspense fallback={<Loader />}>
         <Login />
       </Suspense>
     ),
@@ -34,39 +29,39 @@ const router = createBrowserRouter([
   {
     path: "/Signup",
     element: (
-      <Suspense fallback={""}>
+      <Suspense fallback={<Loader />}>
         <Signup />
+      </Suspense>
+    ),
+  },
+   {
+    path: "/Email-Verified/:uidb64/:token",
+    element: (
+      <Suspense fallback={<Loader />}>
+        <EmailVerified />
       </Suspense>
     ),
   },
   {
     path: "/ForgetPassword",
     element: (
-      <Suspense fallback={""}>
+      <Suspense fallback={<Loader />}>
         <ForgetPassword />
       </Suspense>
     ),
   },
-  {
-    path: "/VerifyOTP",
-    element: (
-      <Suspense fallback={""}>
-        <VerifyOTP />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/CreatePassword",
-    element: (
-      <Suspense fallback={""}>
-        <CreatePassword />
-      </Suspense>
-    ),
-  },
+    {
+      path: "/Reset-Password/:uidb64/:token",
+      element: (
+        <Suspense fallback={<Loader />}>
+          <CreatePassword />
+        </Suspense>
+      ),
+    },
   {
     path: "/Success",
     element: (
-      <Suspense fallback={""}>
+      <Suspense fallback={<Loader />}>
         <SuccessScreen />
       </Suspense>
     ),
@@ -76,7 +71,7 @@ const router = createBrowserRouter([
   {
     path: "/Home",
     element: (
-      <Suspense fallback={""}>
+      <Suspense fallback={<Loader />}>
         <ParentElement />
       </Suspense>
     ),
@@ -84,34 +79,35 @@ const router = createBrowserRouter([
       {
         index: true,
         element: (
-          <Suspense fallback={""}>
+          <Suspense fallback={<Loader />}>
             <Hero />
           </Suspense>
         ),
-      }
-      ,
+      },
       {
         path: "Contact",
         element: (
-          <Suspense fallback={""}>
+          <Suspense fallback={<Loader />}>
             <Contact />
           </Suspense>
         ),
-      }
-      ,
+      },
       {
         path: "Subscription",
         element: (
-          <Suspense fallback={""}>
+          <Suspense fallback={<Loader />}>
             <Subscription />
           </Suspense>
         ),
       },
     ],
   },
+]);
+export default router;
 
-  
-  // 🔒 Admin side
+
+
+ // 🔒 Admin side
   // {
   //   path: "/admin",
   //   element: (
@@ -154,6 +150,3 @@ const router = createBrowserRouter([
   //     },
   //   ],
   // },
-]);
-
-export default router;
