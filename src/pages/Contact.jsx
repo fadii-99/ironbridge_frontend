@@ -78,6 +78,10 @@ const Contact = () => {
 
       // ✅ Success
       setShowModal(true);
+
+       
+
+      
       setFormData({ name: "", email: "", partNumber: "", message: "" });
     } catch (err) {
       // console.error("[contact] network error:", err);
