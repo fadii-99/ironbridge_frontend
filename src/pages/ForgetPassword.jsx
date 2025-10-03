@@ -64,7 +64,7 @@ const ForgetPassword = () => {
       // ✅ reset input
       setEmail("");
     } catch (err) {
-      console.error("[forgot] network error:", err);
+      // console.error("[forgot] network error:", err);
       toast.error("Network error. Please try again.");
     } finally {
       setLoading(false);

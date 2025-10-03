@@ -4,6 +4,7 @@ import Navbar from "./../src/components/Navbar";
 import { useUser } from "../src/context/UserProvider";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ScrollTopFab from "./../src/components/ScrollTopFab";
 
 const ParentElement = () => {
   const { user, reloadUser } = useUser();
@@ -25,15 +26,13 @@ const ParentElement = () => {
       );
 
       const data = await res.json();
-      console.log('Resend data' ,data);
+      // console.log("Resend data", data);
 
       if (res.ok) {
         toast.success(
           data?.message || "Verification email sent successfully.",
           { theme: "dark" }
         );
-
-        // 👇 live update karega user profile
         await reloadUser();
       } else {
         toast.error(data?.error || "Failed to resend verification link.", {
@@ -48,10 +47,8 @@ const ParentElement = () => {
 
   return (
     <div className="w-full min-h-screen">
-      {/* Navbar fixed at top */}
       <Navbar />
 
-      {/* 🔔 Orange verification bar - show only if NOT verified */}
       {user && user.user.is_verified === false && (
         <div className="fixed top-[5rem] left-0 w-full z-40 bg-orange-500 text-white px-6 py-3 flex items-center justify-around text-sm shadow-md">
           <span className="flex items-center gap-2">
@@ -66,10 +63,12 @@ const ParentElement = () => {
         </div>
       )}
 
-      {/* Page Content - adjust padding if bar is visible */}
       <div>
         <Outlet />
       </div>
+
+      {/* 👇 Always available; shows only after small scroll */}
+      <ScrollTopFab threshold={200} />
     </div>
   );
 };

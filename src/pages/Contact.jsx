@@ -80,7 +80,7 @@ const Contact = () => {
       setShowModal(true);
       setFormData({ name: "", email: "", partNumber: "", message: "" });
     } catch (err) {
-      console.error("[contact] network error:", err);
+      // console.error("[contact] network error:", err);
       toast.error("Network error. Try again.");
     } finally {
       setLoading(false);

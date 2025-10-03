@@ -23,7 +23,7 @@ const Subscription = () => {
         });
 
         const data = await res.json();
-        console.log("Plans API response:", data);
+        // console.log("Plans API response:", data);
 
         if (res.ok && Array.isArray(data?.data)) {
           setPlans(data.data); // 👈 directly array le liya
@@ -31,7 +31,7 @@ const Subscription = () => {
           setPlans([]);
         }
       } catch (err) {
-        console.error("Failed to fetch plans:", err);
+        // console.error("Failed to fetch plans:", err);
         setPlans([]);
       } finally {
         setLoading(false);

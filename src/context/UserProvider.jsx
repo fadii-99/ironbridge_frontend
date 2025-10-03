@@ -36,6 +36,7 @@ export const UserProvider = ({ children }) => {
         },
       });
 
+      
       const data = await res.json();
 
       if (!res.ok) {
@@ -44,7 +45,7 @@ export const UserProvider = ({ children }) => {
         setUser(null);
         return;
       }
-      console.log('Getting user data', data );
+      // console.log('Getting user data', data );
       setUser(data);
 
     } catch (err) {

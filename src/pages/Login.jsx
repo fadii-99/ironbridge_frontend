@@ -102,12 +102,12 @@ const Login = () => {
         localStorage.setItem('Access-Token', json.tokens.access);
       }
 
-      console.log(json);
+      // console.log(json);
 
       navigate("/Home");
       
     } catch (err) {
-      console.error("[login] network error:", err);
+      // console.error("[login] network error:", err);
       toast.error("Network error. Try again.");
     } finally {
       setLoading(false);

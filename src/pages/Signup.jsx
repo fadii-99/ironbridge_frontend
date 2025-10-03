@@ -125,7 +125,7 @@ const Signup = () => {
         confirmPassword: "",
       });
     } catch (err) {
-      console.error("[signup] network error:", err);
+      // console.error("[signup] network error:", err);
       toast.error("Network error. Try again.");
     } finally {
       setLoading(false);

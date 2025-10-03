@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
 import Loader from "./../src/components/Loader";
-
+import AuthGuard from "../src/components/AuthGuard";
 
 
 const ParentElement = lazy(() => import("./ParentElement"));
@@ -15,6 +15,7 @@ const Contact = lazy(() => import("./../src/pages/Contact"));
 const Subscription = lazy(() => import("./../src/pages/Subscription"));
 
 const EmailVerified = lazy(() => import("./../src/pages/EmailVerified"));
+
 
 
 const router = createBrowserRouter([
@@ -66,13 +67,13 @@ const router = createBrowserRouter([
       </Suspense>
     ),
   },
-
-  // User side
   {
     path: "/Home",
     element: (
       <Suspense fallback={<Loader />}>
-        <ParentElement />
+          <AuthGuard>
+          <ParentElement />
+        </AuthGuard>
       </Suspense>
     ),
     children: [

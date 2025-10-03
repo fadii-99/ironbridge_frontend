@@ -18,28 +18,28 @@ const EmailVerified = () => {
         return;
       }
 
-      console.log("🚀 Verifying email with:", uidb64, token);
+      // console.log("🚀 Verifying email with:", uidb64, token);
 
       try {
         const url = `${serverUrl}/auth/verify-email/${uidb64}/${token}/`;
-        console.log("📡 Calling API:", url);
+        // console.log("📡 Calling API:", url);
 
         const res = await fetch(url, { method: "POST" });
 
-        console.log("📥 API Response Status:", res.status);
+        // console.log("📥 API Response Status:", res.status);
 
         if (res.ok) {
-          console.log("✅ Email verified successfully from API");
+          // console.log("✅ Email verified successfully from API");
           setVerified(true);
         } else {
-          console.error("❌ Verification failed with status:", res.status);
+          // console.error("❌ Verification failed with status:", res.status);
           setVerified(false);
         }
       } catch (err) {
-        console.error("🔥 Error during API call:", err);
+        // console.error("🔥 Error during API call:", err);
         setVerified(false);
       } finally {
-        console.log("🔄 Finished verification attempt");
+        // console.log("🔄 Finished verification attempt");
         setLoading(false);
       }
     };
