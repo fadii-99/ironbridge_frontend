@@ -73,7 +73,7 @@ const ForgetPassword = () => {
 
   return (
     <>
-      <div className="flex items-center justify-center min-h-screen text-white">
+      <div className="flex items-center justify-center min-h-screen text-white pt-20">
         <div className="w-full max-w-md bg-black/80 border border-white/20 p-8 rounded-xl shadow-lg text-center">
           {/* Logo */}
           <div className="flex justify-center mb-8">

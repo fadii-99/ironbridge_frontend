@@ -1,110 +1,68 @@
+// src/router.jsx
 import { lazy, Suspense } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import Loader from "./../src/components/Loader";
-import AuthGuard from "../src/components/AuthGuard";
+import AuthGuard from "./../src/components/AuthGuard";       
+import ParentElement from "./ParentElement";      
 
-
-const ParentElement = lazy(() => import("./ParentElement"));
-const Hero = lazy(() => import("./../src/pages/Hero"));
-const Login = lazy(() => import("./../src/pages/Login"));
-const Signup = lazy(() => import("./../src/pages/Signup"));
+const Hero           = lazy(() => import("./../src/pages/Hero"));
+const Login          = lazy(() => import("./../src/pages/Login"));
+const Signup         = lazy(() => import("./../src/pages/Signup"));
 const ForgetPassword = lazy(() => import("./../src/pages/ForgetPassword"));
 const CreatePassword = lazy(() => import("./../src/pages/CreatePassword"));
-const SuccessScreen = lazy(() => import("./../src/pages/SuccessScreen"));
-const Contact = lazy(() => import("./../src/pages/Contact"));
-const Subscription = lazy(() => import("./../src/pages/Subscription"));
+const SuccessScreen  = lazy(() => import("./../src/pages/SuccessScreen"));
+const Contact        = lazy(() => import("./../src/pages/Contact"));
+const Subscription   = lazy(() => import("./../src/pages/Subscription"));
+const EmailVerified  = lazy(() => import("./../src/pages/EmailVerified"));
 
-const EmailVerified = lazy(() => import("./../src/pages/EmailVerified"));
+const suspense = (node) => <Suspense fallback={<Loader />}>{node}</Suspense>;
 
+// Layout for /Home/* so children render via <Outlet />
+const HomeLayout = () => <Outlet />;
 
+const GuardedOutlet = () => (
+  <AuthGuard>
+    <Outlet />
+  </AuthGuard>
+);
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <Suspense fallback={<Loader />}>
-        <Login />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/Signup",
-    element: (
-      <Suspense fallback={<Loader />}>
-        <Signup />
-      </Suspense>
-    ),
-  },
-   {
-    path: "/Email-Verified/:uidb64/:token",
-    element: (
-      <Suspense fallback={<Loader />}>
-        <EmailVerified />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/ForgetPassword",
-    element: (
-      <Suspense fallback={<Loader />}>
-        <ForgetPassword />
-      </Suspense>
-    ),
-  },
-    {
-      path: "/Reset-Password/:uidb64/:token",
-      element: (
-        <Suspense fallback={<Loader />}>
-          <CreatePassword />
-        </Suspense>
-      ),
-    },
-  {
-    path: "/Success",
-    element: (
-      <Suspense fallback={<Loader />}>
-        <SuccessScreen />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/Home",
-    element: (
-      <Suspense fallback={<Loader />}>
-          <AuthGuard>
-          <ParentElement />
-        </AuthGuard>
-      </Suspense>
-    ),
+    element: suspense(<ParentElement />),
     children: [
+      // public
+      { index: true, element: suspense(<Login />) },
+      { path: "Signup", element: suspense(<Signup />) },
+      { path: "ForgetPassword", element: suspense(<ForgetPassword />) },
+      { path: "Reset-Password/:uidb64/:token", element: suspense(<CreatePassword />) },
+      { path: "Email-Verified/:uidb64/:token", element: suspense(<EmailVerified />) },
+      { path: "Success", element: suspense(<SuccessScreen />) },
+
+      // public Subscription
+      { path: "Subscription", element: suspense(<Subscription />) },
+
+      // protected area
       {
-        index: true,
-        element: (
-          <Suspense fallback={<Loader />}>
-            <Hero />
-          </Suspense>
-        ),
-      },
-      {
-        path: "Contact",
-        element: (
-          <Suspense fallback={<Loader />}>
-            <Contact />
-          </Suspense>
-        ),
-      },
-      {
-        path: "Subscription",
-        element: (
-          <Suspense fallback={<Loader />}>
-            <Subscription />
-          </Suspense>
-        ),
+        element: <GuardedOutlet />,
+        children: [
+          {
+            path: "Home",
+            element: <HomeLayout />, // ⬅️ gives /Home its own Outlet
+            children: [
+              { index: true, element: suspense(<Hero />) },
+              { path: "Contact", element: suspense(<Contact />) },
+            ],
+          },
+        ],
       },
     ],
   },
 ]);
+
 export default router;
+
+
 
 
 

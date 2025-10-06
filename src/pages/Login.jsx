@@ -1,22 +1,19 @@
-import React, { useState } from "react";
+// src/pages/Login.jsx
+import React, { useState , useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  HiOutlineMail,
-  HiOutlineLockClosed,
-  HiOutlineEye,
-  HiOutlineEyeOff,
-} from "react-icons/hi";
+import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import GradientButton from "./../components/GradientButton";
 import logo from "./../assets/logo.png";
+import { useUser } from "../context/UserProvider"; 
 
 const serverUrl = import.meta.env.VITE_SERVER_URL;
 
-
 const Login = () => {
   const navigate = useNavigate();
+  const { reloadUser } = useUser(); // 👈 get it
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,7 +24,12 @@ const Login = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Helper to extract meaningful backend error messages
+
+  useEffect(() => {
+    localStorage.removeItem("Access-Token");
+  }, []);
+
+
   const extractErrorMessage = (raw, json, fallback = "Invalid credentials") => {
     if (!json) return raw || fallback;
     if (typeof json === "string") return json;
@@ -43,11 +45,9 @@ const Login = () => {
         if (msgs.length) return msgs.join(" | ");
       }
     }
-    // field-specific messages (common DRF pattern)
     const fieldMsgs = ["email", "password", "non_field_errors"]
       .flatMap((k) => (json[k] ? (Array.isArray(json[k]) ? json[k] : [json[k]]) : []));
     if (fieldMsgs.length) return fieldMsgs.join(" | ");
-
     return raw || fallback;
   };
 
@@ -58,19 +58,9 @@ const Login = () => {
     const email = form.email.trim();
     const password = form.password;
 
-    // Client-side validation
-    if (!email && !password) {
-      toast.error("Email and password are required.");
-      return;
-    }
-    if (!email) {
-      toast.error("Email is required.");
-      return;
-    }
-    if (!password) {
-      toast.error("Password is required.");
-      return;
-    }
+    if (!email && !password) return toast.error("Email and password are required.");
+    if (!email) return toast.error("Email is required.");
+    if (!password) return toast.error("Password is required.");
 
     setLoading(true);
 
@@ -82,14 +72,8 @@ const Login = () => {
       });
 
       const raw = await res.text();
-
       let json = null;
-      try {
-        json = raw ? JSON.parse(raw) : null;
-      } catch {
-
-
-      }
+      try { json = raw ? JSON.parse(raw) : null; } catch {}
 
       if (!res.ok) {
         const msg = extractErrorMessage(raw, json);
@@ -97,17 +81,13 @@ const Login = () => {
         return;
       }
 
-      if(json?.tokens?.access)
-      {
-        localStorage.setItem('Access-Token', json.tokens.access);
-      }
+      if (json?.tokens?.access) {
+          localStorage.setItem("Access-Token", json.tokens.access);
 
-      // console.log(json);
-
-      navigate("/Home");
-      
+          navigate("/Home", { replace: true });
+          reloadUser()
+        }
     } catch (err) {
-      // console.error("[login] network error:", err);
       toast.error("Network error. Try again.");
     } finally {
       setLoading(false);
@@ -116,19 +96,16 @@ const Login = () => {
 
   return (
     <>
-      <div className="flex items-center justify-center min-h-screen text-white">
+      <div className="flex items-center justify-center min-h-screen text-white pt-20">
         <div className="w-full max-w-md bg-black/80 border border-white/20 p-8 rounded-xl shadow-lg text-center">
-          {/* Logo */}
           <div className="flex justify-center mb-8">
             <img src={logo} alt="website-logo" className="h-auto w-[8rem]" />
           </div>
-
-          {/* Heading */}
           <h2 className="text-xl font-semibold mb-8">Enter Your Credentials</h2>
 
           <form className="text-left" onSubmit={handleLogin} autoComplete="off" noValidate>
-            {/* Email */}
-            <div className="flex items-center px-4 mb-4 rounded border border-white/20 bg-black/50">
+            <div className="flex items-center px-4 mb-4 rounded border border-white/20 bg-black/50 overflow-hidden"
+            style={{ "--autofill-bg": "rgba(0,0,0,0.5)" }} >
               <HiOutlineMail className="text-gray-400 mr-4 text-lg" />
               <input
                 name="email"
@@ -137,13 +114,11 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder="Enter your email"
                 className="w-full py-4 text-white text-sm placeholder-gray-400 bg-transparent outline-none"
-                autoComplete="email"
                 disabled={loading}
                 aria-invalid={!form.email ? "true" : "false"}
               />
             </div>
 
-            {/* Password */}
             <div className="flex items-center px-4 mb-2 rounded border border-white/20 bg-black/50 relative">
               <HiOutlineLockClosed className="text-gray-400 mr-4 text-lg" />
               <input
@@ -153,7 +128,6 @@ const Login = () => {
                 onChange={handleChange}
                 placeholder="Enter your password"
                 className="w-full py-4 text-white text-sm placeholder-gray-400 bg-transparent outline-none"
-                autoComplete="current-password"
                 disabled={loading}
                 aria-invalid={!form.password ? "true" : "false"}
               />
@@ -164,22 +138,16 @@ const Login = () => {
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 disabled={loading}
               >
-                {showPassword ? (
-                  <HiOutlineEyeOff className="text-lg" />
-                ) : (
-                  <HiOutlineEye className="text-lg" />
-                )}
+                {showPassword ? <HiOutlineEyeOff className="text-lg" /> : <HiOutlineEye className="text-lg" />}
               </button>
             </div>
 
-            {/* Forget Password */}
             <div className="w-full text-right mb-6">
               <Link to="/ForgetPassword" className="text-xs text-gray-400 hover:text-yellow-400">
                 Forget your password?
               </Link>
             </div>
 
-            {/* Login Button */}
             <GradientButton
               label="LOGIN"
               onClick={handleLogin}
@@ -190,7 +158,6 @@ const Login = () => {
             />
           </form>
 
-          {/* Sign Up link */}
           <p className="mt-6 text-xs text-gray-400">
             Don’t have an account?{" "}
             <Link to="/Signup" className="text-yellow-400 hover:underline">
@@ -200,7 +167,6 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Toasts: dark theme, errors only */}
       <ToastContainer
         theme="dark"
         position="top-right"

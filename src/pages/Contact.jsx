@@ -79,8 +79,6 @@ const Contact = () => {
       // ✅ Success
       setShowModal(true);
 
-       
-
       
       setFormData({ name: "", email: "", partNumber: "", message: "" });
     } catch (err) {
@@ -91,6 +89,8 @@ const Contact = () => {
     }
   };
 
+
+  
   return (
     <>
       <section className="flex items-center justify-center min-h-screen px-4 text-white pt-20">

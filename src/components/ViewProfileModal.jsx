@@ -1,15 +1,14 @@
 // src/components/ViewProfileModal.jsx
 import React from "react";
-import { FaTimes, FaIdBadge, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaIdBadge, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { useUser } from "./../context/UserProvider";
 
-const fmt = (iso) => {
-  if (!iso) return "-";
-  try {
-    return new Date(iso).toLocaleString();
-  } catch {
-    return iso;
-  }
+const fmt = (val) => {
+  if (!val) return "-";
+  // your backend sends friendly strings already (e.g., "06 Oct 2025")
+  // if ISO ever comes through, fall back to Date parsing
+  const date = new Date(val);
+  return isNaN(date.getTime()) ? String(val) : date.toLocaleString();
 };
 
 const LabelVal = ({ label, children }) => (
@@ -38,11 +37,13 @@ const ViewProfileModal = ({ onClose }) => {
   const { user } = useUser();
   const u = user?.user || {};
 
+  const planName = u?.plan_name ?? "—";
+  const availableSearches =
+    typeof u?.searches_limit === "number" ? u.searches_limit : "—";
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
       <div className="relative bg-black/90 border border-white/20 rounded-xl shadow-2xl p-6 sm:p-8 text-left max-w-md w-full">
-
-
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-300/10">
@@ -54,27 +55,38 @@ const ViewProfileModal = ({ onClose }) => {
           </div>
         </div>
 
-        {/* Name + Verified row */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Name + Verified */}
+        <div className="flex items-center justify-between mb-3">
           <div className="text-white text-lg font-medium uppercase">
-             {u.full_name || "Guest User"}
+            {u.full_name || "Guest User"}
           </div>
           <div className="flex items-center gap-2">
             {u.is_verified ? (
               <Badge color="green">
                 <span className="inline-flex items-center gap-1">
-                  <FaCheckCircle className="text-[12px]" /> <span className="pt-[0.5px]" >Verified</span>
+                  <FaCheckCircle className="text-[12px]" />{" "}
+                  <span className="pt-[0.5px]">Verified</span>
                 </span>
               </Badge>
             ) : (
               <Badge color="red">
                 <span className="inline-flex items-center gap-1">
-                  <FaTimesCircle className="text-[12px]" /> <span className="pt-[0.5px]">Not Verified</span>
+                  <FaTimesCircle className="text-[12px]" />{" "}
+                  <span className="pt-[0.5px]">Not Verified</span>
                 </span>
               </Badge>
             )}
-           
           </div>
+        </div>
+
+        {/* Plan badges row */}
+        <div className="flex items-center gap-2 mb-5">
+          <Badge color="yellow">
+            Plan:&nbsp;<strong className="text-yellow-300">{planName}</strong>
+          </Badge>
+          <Badge color="blue">
+            Available Searches:&nbsp;<strong className="text-blue-300">{availableSearches}</strong>
+          </Badge>
         </div>
 
         {/* Info list */}
@@ -82,6 +94,7 @@ const ViewProfileModal = ({ onClose }) => {
           <LabelVal label="Email">{u.email || "-"}</LabelVal>
           <LabelVal label="Joined On">{fmt(u.date_joined)}</LabelVal>
           <LabelVal label="Last Login">{fmt(u.last_login)}</LabelVal>
+     
         </div>
 
         {/* Footer */}
@@ -97,6 +110,5 @@ const ViewProfileModal = ({ onClose }) => {
     </div>
   );
 };
-
 
 export default ViewProfileModal;

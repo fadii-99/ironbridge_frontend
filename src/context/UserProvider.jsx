@@ -20,14 +20,14 @@ export const UserProvider = ({ children }) => {
     setLoading(true);
     setError(null);
 
-    try {
-      const token = localStorage.getItem("Access-Token");
-      if (!token) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
+    const token = localStorage.getItem("Access-Token");
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
 
+    try {
       const res = await fetch(`${serverUrl}/auth/profile/`, {
         method: "POST",
         headers: {
@@ -36,7 +36,6 @@ export const UserProvider = ({ children }) => {
         },
       });
 
-      
       const data = await res.json();
 
       if (!res.ok) {
@@ -45,9 +44,9 @@ export const UserProvider = ({ children }) => {
         setUser(null);
         return;
       }
-      // console.log('Getting user data', data );
-      setUser(data);
 
+      console.log('Getting user data', data);
+      setUser(data);
     } catch (err) {
       console.error("[UserProvider] Network error:", err);
       setError("Network error");
@@ -62,7 +61,9 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, loading, error, reloadUser: loadUser }}>
+    <UserContext.Provider
+      value={{ user, setUser, loading, error, reloadUser: loadUser }}
+    >
       {children}
     </UserContext.Provider>
   );
