@@ -1,14 +1,12 @@
 // src/components/ViewProfileModal.jsx
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { FaIdBadge, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { useUser } from "./../context/UserProvider";
 
 const fmt = (val) => {
   if (!val) return "-";
-  // your backend sends friendly strings already (e.g., "06 Oct 2025")
-  // if ISO ever comes through, fall back to Date parsing
-  const date = new Date(val);
-  return isNaN(date.getTime()) ? String(val) : date.toLocaleString();
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? String(val) : d.toLocaleString();
 };
 
 const LabelVal = ({ label, children }) => (
@@ -26,11 +24,7 @@ const Badge = ({ children, color = "gray" }) => {
     gray: "bg-white/10 text-gray-300 border-white/10",
     blue: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   };
-  return (
-    <span className={`px-2 py-1 rounded text-[10px] border ${map[color]}`}>
-      {children}
-    </span>
-  );
+  return <span className={`px-2 py-1 rounded text-[10px] border ${map[color]}`}>{children}</span>;
 };
 
 const ViewProfileModal = ({ onClose }) => {
@@ -41,9 +35,36 @@ const ViewProfileModal = ({ onClose }) => {
   const availableSearches =
     typeof u?.searches_limit === "number" ? u.searches_limit : "—";
 
+  // ref to the card
+  const cardRef = useRef(null);
+
+  // Close on ESC
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose?.();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  // Close on ANY click outside the card (not just backdrop)
+  useEffect(() => {
+    const handleDown = (e) => {
+      if (!cardRef.current) return;
+      if (!cardRef.current.contains(e.target)) onClose?.();
+    };
+    document.addEventListener("mousedown", handleDown);
+    return () => document.removeEventListener("mousedown", handleDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
-      <div className="relative bg-black/90 border border-white/20 rounded-xl shadow-2xl p-6 sm:p-8 text-left max-w-md w-full">
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black/70 z-50"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        ref={cardRef}
+        className="relative bg-black/90 border border-white/20 rounded-xl shadow-2xl p-6 sm:p-8 text-left max-w-md w-full"
+      >
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-300/10">
@@ -64,14 +85,14 @@ const ViewProfileModal = ({ onClose }) => {
             {u.is_verified ? (
               <Badge color="green">
                 <span className="inline-flex items-center gap-1">
-                  <FaCheckCircle className="text-[12px]" />{" "}
+                  <FaCheckCircle className="text-[12px]" />
                   <span className="pt-[0.5px]">Verified</span>
                 </span>
               </Badge>
             ) : (
               <Badge color="red">
                 <span className="inline-flex items-center gap-1">
-                  <FaTimesCircle className="text-[12px]" />{" "}
+                  <FaTimesCircle className="text-[12px]" />
                   <span className="pt-[0.5px]">Not Verified</span>
                 </span>
               </Badge>
@@ -79,7 +100,7 @@ const ViewProfileModal = ({ onClose }) => {
           </div>
         </div>
 
-        {/* Plan badges row */}
+        {/* Plan badges */}
         <div className="flex items-center gap-2 mb-5">
           <Badge color="yellow">
             Plan:&nbsp;<strong className="text-yellow-300">{planName}</strong>
@@ -94,7 +115,6 @@ const ViewProfileModal = ({ onClose }) => {
           <LabelVal label="Email">{u.email || "-"}</LabelVal>
           <LabelVal label="Joined On">{fmt(u.date_joined)}</LabelVal>
           <LabelVal label="Last Login">{fmt(u.last_login)}</LabelVal>
-     
         </div>
 
         {/* Footer */}

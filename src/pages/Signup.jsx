@@ -190,7 +190,7 @@ const Signup = () => {
               />
             </div>
 
-            {/* Password + Confirm Password */}
+
             <div className="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 sm:mb-6 mb-4">
               {/* Password */}
               <div className="flex items-center flex-1 px-4 rounded border border-white/20 bg-black/50 relative">

@@ -110,6 +110,7 @@ const Contact = () => {
               onChange={handleChange}
               className="w-full py-4 text-white text-sm placeholder-gray-400 bg-transparent outline-none"
               disabled={loading}
+              autoComplete="off"
             />
           </div>
 
@@ -124,6 +125,7 @@ const Contact = () => {
               onChange={handleChange}
               className="w-full py-4 text-white text-sm placeholder-gray-400 bg-transparent outline-none"
               disabled={loading}
+              autoComplete="off"
             />
           </div>
 
@@ -138,6 +140,7 @@ const Contact = () => {
               onChange={handleChange}
               className="w-full py-4 text-white text-sm placeholder-gray-400 bg-transparent outline-none"
               disabled={loading}
+              autoComplete="off"
             />
           </div>
 
@@ -152,6 +155,7 @@ const Contact = () => {
               rows={4}
               className="w-full py-4 text-white text-sm placeholder-gray-400 bg-transparent outline-none resize-none"
               disabled={loading}
+              autoComplete="off"
             />
           </div>
 

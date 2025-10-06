@@ -118,7 +118,7 @@ export default function Navbar() {
           {authStage === "loading" ? (
             // ⏳ show small loader while user profile hydrates
             <div className="hidden md:block w-16">
-              <SmallLoader size={8} />
+              <SmallLoader size={4} />
             </div>
           ) : authStage === "authed" ? (
             // 👤 profile dropdown
