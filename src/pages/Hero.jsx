@@ -124,6 +124,17 @@ const Hero = () => {
 
         {/* Search Bar */}
         <div className="w-full xl:max-w-[60%] lg:max-w-[80%] mx-auto mt-4 flex flex-col items-end gap-3">
+            <div className="flex flex-row gap-8 items-center">
+            <label className="md:text-xs text-[11px] text-gray-400 font-light">
+              Your Plan :
+              <span className="text-white ml-1">{planName}</span>
+            </label>
+
+            <label className="md:text-xs text-[11px] text-gray-400 font-light">
+              Available Searches :
+              <span className="text-white ml-1">{availableSearches}</span>
+            </label>
+          </div>
           <div className="flex gap-2 w-full">
             <div className="flex items-center flex-1 px-4 rounded border border-white/20 bg-black/50">
               <FaSearch className="text-gray-400 sm:mr-5 mr-3 text-sm" />
@@ -142,19 +153,13 @@ const Hero = () => {
               disabled={loading}
             />
           </div>
+          <p className="text-[11px] text-gray-400 font-light text-center"> <span className="text-white font-semibold">Disclaimer:</span> All brand names, 
+          logos, and part numbers are the property of their respective owners. 
+            IronBridge provides cross-reference data for informational and sourcing purposes only and is not endorsed or 
+            sponsored by any manufacturer.</p>
 
           {/* ✅ Plan + Available Searches (loaders removed) */}
-          <div className="flex flex-row gap-8 min-h-[1.5rem] items-center">
-            <label className="md:text-xs text-[11px] text-gray-400 font-light">
-              Your Plan :
-              <span className="text-white ml-1">{planName}</span>
-            </label>
-
-            <label className="md:text-xs text-[11px] text-gray-400 font-light">
-              Available Searches :
-              <span className="text-white ml-1">{availableSearches}</span>
-            </label>
-          </div>
+        
         </div>
       </section>
 
