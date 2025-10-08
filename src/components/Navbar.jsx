@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
@@ -9,7 +8,7 @@ import { useUser } from "./../context/UserProvider";
 import DeleteAccountModal from "./DeleteAccount";
 import ViewProfileModal from "./ViewProfileModal";
 import GradientButton from "./GradientButton";
-import SmallLoader from "./SmallLoader"; // 👈 your 3-dot loader
+import SmallLoader from "./SmallLoader"; // 👈 3-dot loader
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -58,7 +57,9 @@ export default function Navbar() {
   };
 
   const linkClasses = ({ isActive }) =>
-    `transition text-sm font-light ${isActive ? "text-yellow-300" : "opacity-80 hover:text-yellow-300"}`;
+    `transition text-sm font-light ${
+      isActive ? "text-yellow-300" : "opacity-80 hover:text-yellow-300"
+    }`;
 
   const NavItem = ({ to, label, disabled = false, exact = false, onClick }) => {
     if (disabled) {
@@ -80,8 +81,6 @@ export default function Navbar() {
   };
 
   const closeMenu = () => setMenuOpen(false);
-
-  // disable Home/Contact while user is loading or not authed
   const disableProtectedLinks = authStage !== "authed";
 
   return (
@@ -98,9 +97,15 @@ export default function Navbar() {
 
         {/* Mid: Links */}
         <ul className="hidden md:flex items-center gap-8 text-sm font-medium">
-          <li><NavItem to="/Home" label="Home" disabled={disableProtectedLinks} exact /></li>
-          <li><NavItem to="/Subscription" label="Subscription" /></li>
-          <li><NavItem to="/Home/Contact" label="Contact us" disabled={disableProtectedLinks} /></li>
+          <li>
+            <NavItem to="/Home" label="Home" disabled={disableProtectedLinks} exact />
+          </li>
+          <li>
+            <NavItem to="/Subscription" label="Subscription" />
+          </li>
+          <li>
+            <NavItem to="/Contact" label="Contact us" /> {/* ✅ Now public */}
+          </li>
         </ul>
 
         {/* Right side */}
@@ -116,7 +121,7 @@ export default function Navbar() {
 
           {/* Desktop right section */}
           {authStage === "loading" ? (
-            // ⏳ show small loader while user profile hydrates
+            // ⏳ show loader
             <div className="hidden md:block w-16">
               <SmallLoader size={4} />
             </div>
@@ -133,7 +138,10 @@ export default function Navbar() {
               </button>
 
               {open && (
-                <div className="absolute right-0 mt-3 w-64 bg-black/80 text-gray-200 shadow-2xl rounded-xl p-3 z-50 border border-white/20 backdrop-blur" role="menu">
+                <div
+                  className="absolute right-0 mt-3 w-64 bg-black/80 text-gray-200 shadow-2xl rounded-xl p-3 z-50 border border-white/20 backdrop-blur"
+                  role="menu"
+                >
                   <div className="px-3 py-2">
                     <div className="text-md font-medium">{user?.user?.full_name || "User"}</div>
                     <div className="text-[11px] text-gray-400 mt-1">{user?.user?.email || ""}</div>
@@ -141,17 +149,26 @@ export default function Navbar() {
 
                   <div className="h-px bg-white/10 my-2" />
 
-                  <button onClick={() => setShowProfileModal(true)} className="flex items-center gap-3 px-4 py-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition cursor-pointer w-full">
+                  <button
+                    onClick={() => setShowProfileModal(true)}
+                    className="flex items-center gap-3 px-4 py-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition cursor-pointer w-full"
+                  >
                     <FaIdBadge className="text-[14px]" />
                     <span className="text-sm">View Profile</span>
                   </button>
 
-                  <button onClick={() => setShowDeleteModal(true)} className="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-600/20 rounded-lg transition cursor-pointer w-full">
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-600/20 rounded-lg transition cursor-pointer w-full"
+                  >
                     <FaTrashAlt className="text-[14px]" />
                     <span className="text-sm">Delete Account</span>
                   </button>
 
-                  <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-yellow-400 hover:bg-yellow-500/20 rounded-lg transition cursor-pointer w-full">
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-2 text-yellow-400 hover:bg-yellow-500/20 rounded-lg transition cursor-pointer w-full"
+                  >
                     <FiLogOut className="text-[14px]" />
                     <span className="text-sm">Logout</span>
                   </button>
@@ -170,31 +187,32 @@ export default function Navbar() {
         {menuOpen && (
           <div className="absolute top-full left-0 w-full bg-black/95 text-white md:hidden shadow-lg border-t border-white/10">
             <ul className="flex flex-col px-6 py-4 space-y-4 text-sm font-medium">
-              {/* when loading, show loader row */}
               {authStage === "loading" && (
                 <li className="py-1">
-                  <SmallLoader size={8} />
+                  <SmallLoader size={5} />
                 </li>
               )}
 
               <li>
                 {authStage === "authed" ? (
-                  <NavLink to="/Home" end className={linkClasses} onClick={closeMenu}>Home</NavLink>
+                  <NavLink to="/Home" end className={linkClasses} onClick={closeMenu}>
+                    Home
+                  </NavLink>
                 ) : (
                   <span className="opacity-50 cursor-not-allowed select-none">Home</span>
                 )}
               </li>
 
               <li>
-                <NavLink to="/Subscription" className={linkClasses} onClick={closeMenu}>Subscription</NavLink>
+                <NavLink to="/Subscription" className={linkClasses} onClick={closeMenu}>
+                  Subscription
+                </NavLink>
               </li>
 
               <li>
-                {authStage === "authed" ? (
-                  <NavLink to="/Home/Contact" className={linkClasses} onClick={closeMenu}>Contact us</NavLink>
-                ) : (
-                  <span className="opacity-50 cursor-not-allowed select-none">Contact us</span>
-                )}
+                <NavLink to="/Contact" className={linkClasses} onClick={closeMenu}>
+                  Contact us
+                </NavLink>
               </li>
 
               {authStage === "guest" ? (

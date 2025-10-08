@@ -17,8 +17,10 @@ const EmailVerified  = lazy(() => import("./../src/pages/EmailVerified"));
 
 const suspense = (node) => <Suspense fallback={<Loader />}>{node}</Suspense>;
 
-// Layout for /Home/* so children render via <Outlet />
+
 const HomeLayout = () => <Outlet />;
+
+
 
 const GuardedOutlet = () => (
   <AuthGuard>
@@ -41,6 +43,7 @@ const router = createBrowserRouter([
 
       // public Subscription
       { path: "Subscription", element: suspense(<Subscription />) },
+            { path: "Contact", element: suspense(<Contact />) }, 
 
       // protected area
       {
@@ -51,7 +54,6 @@ const router = createBrowserRouter([
             element: <HomeLayout />, // ⬅️ gives /Home its own Outlet
             children: [
               { index: true, element: suspense(<Hero />) },
-              { path: "Contact", element: suspense(<Contact />) },
             ],
           },
         ],

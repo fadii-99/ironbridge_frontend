@@ -36,3 +36,24 @@ body {
 
 
 
+/* === Autofill Fix for Dark Inputs === */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0.5) inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  transition: background-color 9999s ease-in-out 0s !important;
+  caret-color: #ffffff !important;
+}
+
+/* Optional: Apply same style to textareas and selects */
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px rgba(0, 0, 0, 0.5) inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+
+
+

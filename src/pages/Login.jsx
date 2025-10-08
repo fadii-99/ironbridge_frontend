@@ -13,7 +13,7 @@ const serverUrl = import.meta.env.VITE_SERVER_URL;
 
 const Login = () => {
   const navigate = useNavigate();
-  const { reloadUser } = useUser(); // 👈 get it
+  const { reloadUser } = useUser(); 
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,6 +23,7 @@ const Login = () => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
 
 
   useEffect(() => {
@@ -104,8 +105,8 @@ const Login = () => {
           <h2 className="text-xl font-semibold mb-8">Enter Your Credentials</h2>
 
           <form className="text-left" onSubmit={handleLogin} autoComplete="off" noValidate>
-            <div className="flex items-center px-4 mb-4 rounded border border-white/20 bg-black/50 overflow-hidden"
-            style={{ "--autofill-bg": "rgba(0,0,0,0.5)" }} >
+            <div className="flex items-center px-4 mb-4 rounded border border-white/20 bg-black/50 "
+            >
               <HiOutlineMail className="text-gray-400 mr-4 text-lg" />
               <input
                 name="email"

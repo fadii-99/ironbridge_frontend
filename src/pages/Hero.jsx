@@ -1,4 +1,3 @@
-// src/pages/Hero.jsx
 import React, { useState, useRef } from "react";
 import { FaSearch, FaArrowDown } from "react-icons/fa";
 import GradientButton from "./../components/GradientButton";
@@ -13,7 +12,7 @@ const SEARCH_ENDPOINT = `${serverUrl}/catalog/search/`;
 const DEFAULT_PER_PAGE = 10;
 
 const Hero = () => {
-  const { user, reloadUser, loading: userLoading } = useUser();
+  const { user, reloadUser } = useUser();
   const [loading, setLoading] = useState(false);
   const [showTable, setShowTable] = useState(false);
   const [query, setQuery] = useState("");
@@ -24,8 +23,6 @@ const Hero = () => {
   const [perPage] = useState(DEFAULT_PER_PAGE);
   const [totalPages, setTotalPages] = useState(0);
   const [count, setCount] = useState(0);
-
-  const [refreshingSearches, setRefreshingSearches] = useState(false);
 
   const resultRef = useRef(null);
 
@@ -86,14 +83,12 @@ const Hero = () => {
       setTotalPages(meta.total_pages || 0);
       setCount(typeof payload?.count === "number" ? payload.count : 0);
 
-      // 🔁 only refresh the searches count
-      setRefreshingSearches(true);
+      // 🔁 refresh user info after search
       await reloadUser();
     } catch (err) {
       toast.error(`❌ ${err.message || "Something went wrong"}`);
     } finally {
       setLoading(false);
-      setRefreshingSearches(false);
     }
   };
 
@@ -111,14 +106,6 @@ const Hero = () => {
   const startIdx = count === 0 ? 0 : (page - 1) * perPage + 1;
   const endIdx = Math.min(page * perPage, count);
 
-  // small inline loader wrapper (prevents layout stretch from SmallLoader's w-full)
-  const InlineSpinner = ({ size = 4 }) => (
-    <span className="inline-flex items-center min-w-[1.75rem] ml-1 align-middle">
-      <SmallLoader size={size} />
-    </span>
-  );
-
-  
   return (
     <>
       <ToastContainer position="top-right" autoClose={2500} theme="dark" />
@@ -156,20 +143,16 @@ const Hero = () => {
             />
           </div>
 
-          {/* Plan + Available Searches row */}
+          {/* ✅ Plan + Available Searches (loaders removed) */}
           <div className="flex flex-row gap-8 min-h-[1.5rem] items-center">
             <label className="md:text-xs text-[11px] text-gray-400 font-light">
               Your Plan :
-              <span className="text-white ml-1">
-                {userLoading ? <InlineSpinner /> : planName}
-              </span>
+              <span className="text-white ml-1">{planName}</span>
             </label>
 
             <label className="md:text-xs text-[11px] text-gray-400 font-light">
               Available Searches :
-              <span className="text-white ml-1">
-                {(userLoading || refreshingSearches) ? <InlineSpinner /> : availableSearches}
-              </span>
+              <span className="text-white ml-1">{availableSearches}</span>
             </label>
           </div>
         </div>
@@ -247,12 +230,17 @@ const Hero = () => {
                         </thead>
                         <tbody>
                           {rows.map((row, i) => (
-                            <tr key={`${row.part}-${i}`} className="border-b border-white/10 hover:bg-white/5 transition">
+                            <tr
+                              key={`${row.part}-${i}`}
+                              className="border-b border-white/10 hover:bg-white/5 transition"
+                            >
                               <td className="p-3 sm:text-sm text-xs text-nowrap">{row.part}</td>
                               <td className="p-3 sm:text-sm text-xs text-nowrap">{row.desc}</td>
                               <td className="p-3 sm:text-sm text-xs text-nowrap">{row.cat}</td>
                               <td className="p-3 sm:text-sm text-xs text-nowrap">{row.status}</td>
-                              <td className="p-3 sm:text-sm text-xs text-nowrap">{row.manufacturer}</td>
+                              <td className="p-3 sm:text-sm text-xs text-nowrap">
+                                {row.manufacturer}
+                              </td>
                               <td className="p-3 sm:text-sm text-xs text-nowrap">{row.size}</td>
                               <td className="p-3 sm:text-sm text-xs text-nowrap">{row.finish}</td>
                               <td className="p-3 sm:text-sm text-xs">{row.crossovers}</td>
