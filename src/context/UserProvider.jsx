@@ -39,16 +39,16 @@ export const UserProvider = ({ children }) => {
       const data = await res.json();
 
       if (!res.ok) {
-        console.error("[UserProvider] Failed:", data);
+        // console.error("[UserProvider] Failed:", data);
         setError("Failed to load user profile");
         setUser(null);
         return;
       }
 
-      console.log('Getting user data', data);
+      // console.log('Getting user data', data);
       setUser(data);
     } catch (err) {
-      console.error("[UserProvider] Network error:", err);
+      // console.error("[UserProvider] Network error:", err);
       setError("Network error");
       setUser(null);
     } finally {

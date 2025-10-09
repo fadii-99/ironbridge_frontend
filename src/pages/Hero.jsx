@@ -83,7 +83,6 @@ const Hero = () => {
       setTotalPages(meta.total_pages || 0);
       setCount(typeof payload?.count === "number" ? payload.count : 0);
 
-      // 🔁 refresh user info after search
       await reloadUser();
     } catch (err) {
       toast.error(`❌ ${err.message || "Something went wrong"}`);
@@ -158,7 +157,6 @@ const Hero = () => {
             IronBridge provides cross-reference data for informational and sourcing purposes only and is not endorsed or 
             sponsored by any manufacturer.</p>
 
-          {/* ✅ Plan + Available Searches (loaders removed) */}
         
         </div>
       </section>
@@ -166,7 +164,7 @@ const Hero = () => {
       {(loading || showTable) && (
         <section
           ref={resultRef}
-          className="scroll-mt-28 -mt-40 md:-mt-28 w-full mx-auto sm:max-w-[80%] max-w-[95%] bg-black/80 sm:mb-20 mb-14 border border-white/20 px-6 py-12 text-white flex justify-center"
+          className="scroll-mt-28 -mt-20 md:-mt-28 w-full mx-auto sm:max-w-[80%] max-w-[95%] bg-black/80 sm:mb-20 mb-14 border border-white/20 px-6 py-12 text-white flex justify-center"
         >
           <div className="w-full">
             {loading ? (
