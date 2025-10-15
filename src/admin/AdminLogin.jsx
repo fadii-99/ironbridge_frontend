@@ -25,6 +25,7 @@ const AdminLogin = () => {
 
     const email = form.email.trim();
     const password = form.password.trim();
+    const role = 'admin';
 
     if (!email || !password) return toast.error("Email and password are required.");
     setLoading(true);
@@ -33,7 +34,7 @@ const AdminLogin = () => {
       const res = await fetch(`${serverUrl}/auth/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password , role }),
       });
 
       const data = await res.json();
