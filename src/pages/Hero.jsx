@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaSearch, FaArrowDown } from "react-icons/fa";
 import GradientButton from "./../components/GradientButton";
 import SmallLoader from "./../components/SmallLoader";
@@ -8,15 +8,18 @@ import { useUser } from "./../context/UserProvider";
 
 const serverUrl = import.meta.env.VITE_SERVER_URL;
 const SEARCH_ENDPOINT = `${serverUrl}/catalog/search/`;
-
 const DEFAULT_PER_PAGE = 10;
 
 const Hero = () => {
   const { user, reloadUser } = useUser();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const [loading, setLoading] = useState(false);
   const [showTable, setShowTable] = useState(false);
   const [query, setQuery] = useState("");
   const [rows, setRows] = useState([]);
+  const [searchType, setSearchType] = useState("part_number");
 
   // pagination
   const [page, setPage] = useState(1);
@@ -24,23 +27,33 @@ const Hero = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [count, setCount] = useState(0);
 
+  // expanded state for “see more”
+  const [expandedCells, setExpandedCells] = useState({});
+
   const resultRef = useRef(null);
 
   const planName = user?.user?.plan_name ?? "—";
   const availableSearches =
     typeof user?.user?.searches_limit === "number" ? user.user.searches_limit : "—";
 
-  const statusFromMatch = (m) => {
-    if (!m) return "Related";
-    if (m?.matched_field?.startsWith("primary") && !m.is_crossover_match) return "Exact";
-    if (m?.is_crossover_match) return "Crossover";
-    return "Related";
-  };
+  // 🔸 Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const formatCrossovers = (list) =>
-    Array.isArray(list) && list.length
-      ? list.map((c) => `${c?.brand ?? "-"}: ${c?.part_number ?? "-"}`).join(" • ")
-      : "-";
+  const toggleExpand = (rowIndex, key) => {
+    const cellId = `${rowIndex}-${key}`;
+    setExpandedCells((prev) => ({
+      ...prev,
+      [cellId]: !prev[cellId],
+    }));
+  };
 
   const fetchPage = async (nextPage) => {
     setLoading(true);
@@ -54,34 +67,26 @@ const Hero = () => {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      const res = await fetch(SEARCH_ENDPOINT, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ partNumber: query, page: nextPage, per_page: perPage }),
-      });
-
+      const url = `${SEARCH_ENDPOINT}?q=${encodeURIComponent(
+        query
+      )}&type=${searchType}&page=${nextPage}&page_size=${perPage}`;
+      const res = await fetch(url, { method: "GET", headers });
       const payload = await res.json();
-      console.log(payload);
+
       if (!res.ok || payload?.success === false) {
-        throw new Error(payload?.error || payload?.message || "Search failed. Please try again.");
+        throw new Error(payload?.message || "Search failed. Please try again.");
       }
 
-      const mapped = (Array.isArray(payload?.data) ? payload.data : []).map((item) => ({
-        part: item.part_number || "-",
-        desc: item.description || "-",
-        cat: item.tool_type || "-",
-        status: statusFromMatch(item.match_info),
-        manufacturer: item.manufacturer || "-",
-        size: item.size || "-",
-        finish: item.finish || "-",
-        crossovers: formatCrossovers(item.crossovers),
-      }));
-      setRows(mapped);
+      const dataArray = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data?.results)
+        ? payload.data.results
+        : [];
 
-      const meta = payload?.meta || {};
-      setPage(meta.page || nextPage || 1);
-      setTotalPages(meta.total_pages || 0);
-      setCount(typeof payload?.count === "number" ? payload.count : 0);
+      setRows(dataArray);
+      setPage(nextPage || 1);
+      setTotalPages(payload?.data?.pages || 0);
+      setCount(payload?.data?.count || dataArray.length || 0);
 
       await reloadUser();
     } catch (err) {
@@ -92,7 +97,7 @@ const Hero = () => {
   };
 
   const handleSearch = async () => {
-    if (!query.trim()) return toast.error("Please enter a part number");
+    if (!query.trim()) return toast.error("Please enter a search term");
     setRows([]);
     setCount(0);
     setTotalPages(0);
@@ -108,59 +113,117 @@ const Hero = () => {
   return (
     <>
       <ToastContainer position="top-right" autoClose={2500} theme="dark" />
-
       <section className="flex flex-col items-center justify-center text-center sm:gap-10 gap-7 min-h-screen px-6 text-white md:max-w-[80%] max-w-[95%] mx-auto">
         <h1 className="md:text-7xl text-5xl font-extrabold sm:leading-tight leading-15">
           <span className="text-yellow-300">Industrial</span> Cross Reference
         </h1>
-
         <p className="md:text-md sm:text-sm text-xs text-gray-300 leading-relaxed">
           A powerful tool to quickly search and reference industrial products. <br />
           Search faster. Cross-reference smarter. Streamline sourcing.
         </p>
-
         <FaArrowDown className="text-white sm:text-2xl text-lg smooth-float" />
 
-        {/* Search Bar */}
+        {/* Search bar */}
         <div className="w-full xl:max-w-[60%] lg:max-w-[80%] mx-auto mt-4 flex flex-col items-end gap-3">
-            <div className="flex flex-row gap-8 items-center">
+          <div className="flex flex-row gap-8 items-center">
             <label className="md:text-xs text-[11px] text-gray-400 font-light">
-              Your Plan :
-              <span className="text-white ml-1">{planName}</span>
+              Your Plan : <span className="text-white ml-1">{planName}</span>
             </label>
-
             <label className="md:text-xs text-[11px] text-gray-400 font-light">
-              Available Searches :
+              Available Searches :{" "}
               <span className="text-white ml-1">{availableSearches}</span>
             </label>
           </div>
-          <div className="flex gap-2 w-full">
-            <div className="flex items-center flex-1 px-4 rounded border border-white/20 bg-black/50">
-              <FaSearch className="text-gray-400 sm:mr-5 mr-3 text-sm" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="Enter part number"
-                className="w-full py-4 text-white sm:text-sm text-xs placeholder-gray-400 outline-none bg-transparent"
-              />
+
+          <div className="flex gap-2 w-full flex-col sm:flex-row">
+            {/* Unified search box */}
+            <div className="flex items-center justify-between flex-1 px-4 rounded border border-white/20 bg-black/50 relative">
+              {/* Custom dropdown */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  className="flex items-center gap-1 text-gray-300 text-xs sm:text-sm font-light py-4 focus:outline-none text-nowrap"
+                >
+                  {searchType === "part_number" ? "Part Number" : "Manufacturer"}
+                  <FaArrowDown
+                    className={`text-[10px] transition-transform duration-200 ml-4 ${
+                      dropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute left-0 top-full mt-1 w-52 bg-black border border-white/20 rounded shadow-lg z-10 text-nowrap">
+                    <button
+                      onClick={() => {
+                        setSearchType("part_number");
+                        setDropdownOpen(false);
+                      }}
+                      className={`block w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-white/10 ${
+                        searchType === "part_number"
+                          ? "text-yellow-300"
+                          : "text-gray-300"
+                      }`}
+                    >
+                      Search by Part Number
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSearchType("manufacturer");
+                        setDropdownOpen(false);
+                      }}
+                      className={`block w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-white/10 ${
+                        searchType === "manufacturer"
+                          ? "text-yellow-300"
+                          : "text-gray-300"
+                      }`}
+                    >
+                      Search by Manufacturer
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="w-px h-5 bg-white/20 mx-3" />
+
+              {/* Input */}
+              <div className="flex items-center flex-1">
+                <FaSearch className="text-gray-400 sm:mr-3 mr-2 text-sm" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  placeholder={
+                    searchType === "part_number"
+                      ? "Enter part number"
+                      : "Enter manufacturer name"
+                  }
+                  className="w-full py-4 text-white sm:text-sm text-xs placeholder-gray-400 outline-none bg-transparent"
+                />
+              </div>
             </div>
+
+            {/* Search Button */}
             <GradientButton
               label={loading ? "SEARCHING..." : "SEARCH"}
               onClick={handleSearch}
               disabled={loading}
             />
           </div>
-          <p className="text-[11px] text-gray-400 font-light text-center"> <span className="text-white font-semibold">Disclaimer:</span> All brand names, 
-          logos, and part numbers are the property of their respective owners. 
-            IronBridge provides cross-reference data for informational and sourcing purposes only and is not endorsed or 
-            sponsored by any manufacturer.</p>
 
-        
+          <p className="text-[11px] text-gray-400 font-light text-center">
+            <span className="text-white font-semibold">Disclaimer:</span> All brand names,
+            logos, and part numbers are the property of their respective owners. IronBridge
+            provides cross-reference data for informational and sourcing purposes only and
+            is not endorsed or sponsored by any manufacturer.
+          </p>
         </div>
       </section>
 
+      {/* Results */}
       {(loading || showTable) && (
         <section
           ref={resultRef}
@@ -189,22 +252,24 @@ const Hero = () => {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => fetchPage(page - 1)}
-                        disabled={!canPrev}
+                        disabled={page <= 1}
                         className={`px-3 py-1 rounded border border-white/20 hover:bg-white/10 transition ${
-                          !canPrev ? "opacity-50 cursor-not-allowed" : ""
+                          page <= 1 ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       >
                         Prev
                       </button>
                       <span className="px-2">
                         Page <span className="text-white">{page}</span>
-                        {totalPages ? <> / <span className="text-white">{totalPages}</span></> : null}
+                        {totalPages ? (
+                          <> / <span className="text-white">{totalPages}</span></>
+                        ) : null}
                       </span>
                       <button
                         onClick={() => fetchPage(page + 1)}
-                        disabled={!canNext}
+                        disabled={page >= totalPages}
                         className={`px-3 py-1 rounded border border-white/20 hover:bg-white/10 transition ${
-                          !canNext ? "opacity-50 cursor-not-allowed" : ""
+                          page >= totalPages ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                       >
                         Next
@@ -212,41 +277,60 @@ const Hero = () => {
                     </div>
                   </div>
 
+                  {/* Table */}
                   {rows.length === 0 ? (
                     <div className="flex items-center justify-center sm:h-[30vh] h-[25vh] text-gray-400 text-sm">
-                      No results found. Try a different part number or brand.
+                      No results found. Try a different {searchType.replace("_", " ")}.
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-sm text-gray-300 border-collapse">
                         <thead>
                           <tr className="border-b border-white/20 text-yellow-300">
-                            <th className="p-3 sm:text-sm text-xs text-nowrap">Part No</th>
-                            <th className="p-3 sm:text-sm text-xs text-nowrap">Description</th>
-                            <th className="p-3 sm:text-sm text-xs text-nowrap">Category</th>
-                            <th className="p-3 sm:text-sm text-xs text-nowrap">Status</th>
-                            <th className="p-3 sm:text-sm text-xs text-nowrap">Manufacturer</th>
-                            <th className="p-3 sm:text-sm text-xs text-nowrap">Size</th>
-                            <th className="p-3 sm:text-sm text-xs text-nowrap">Finish</th>
-                            <th className="p-3 sm:text-sm text-xs">Crossovers</th>
+                            {Object.keys(rows[0]).map((key) => (
+                              <th key={key} className="p-3 sm:text-sm text-xs capitalize">
+                                {key}
+                              </th>
+                            ))}
                           </tr>
                         </thead>
                         <tbody>
-                          {rows.map((row, i) => (
+                          {rows.map((row, rowIndex) => (
                             <tr
-                              key={`${row.part}-${i}`}
-                              className="border-b border-white/10 hover:bg-white/5 transition"
+                              key={rowIndex}
+                              className="border-b border-white/10 hover:bg-white/5 transition align-top"
                             >
-                              <td className="p-3 sm:text-sm text-xs text-nowrap">{row.part}</td>
-                              <td className="p-3 sm:text-sm text-xs text-nowrap">{row.desc}</td>
-                              <td className="p-3 sm:text-sm text-xs text-nowrap">{row.cat}</td>
-                              <td className="p-3 sm:text-sm text-xs text-nowrap">{row.status}</td>
-                              <td className="p-3 sm:text-sm text-xs text-nowrap">
-                                {row.manufacturer}
-                              </td>
-                              <td className="p-3 sm:text-sm text-xs text-nowrap">{row.size}</td>
-                              <td className="p-3 sm:text-sm text-xs text-nowrap">{row.finish}</td>
-                              <td className="p-3 sm:text-sm text-xs">{row.crossovers}</td>
+                              {Object.keys(row).map((key, colIndex) => {
+                                const value = row[key] || "-";
+                                
+                                const isLong =
+                                  typeof value === "string" && value.length > 70;
+                                const cellId = `${rowIndex}-${key}`;
+                                const expanded = expandedCells[cellId];
+
+                                return (
+                                  <td
+                                    key={colIndex}
+                                    className="p-3 sm:text-sm text-xs whitespace-pre-wrap break-words max-w-[300px]"
+                                  >
+                                    {isLong ? (
+                                      <>
+                                        {expanded
+                                          ? value
+                                          : `${value.slice(0, 70)}... `}
+                                        <button
+                                          onClick={() => toggleExpand(rowIndex, key)}
+                                          className="text-yellow-300 underline hover:text-yellow-400 text-[11px]"
+                                        >
+                                          {expanded ? "see less" : "see more"}
+                                        </button>
+                                      </>
+                                    ) : (
+                                      value
+                                    )}
+                                  </td>
+                                );
+                              })}
                             </tr>
                           ))}
                         </tbody>

@@ -1,9 +1,9 @@
-// src/router.jsx
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import Loader from "./../src/components/Loader";
-import AuthGuard from "./../src/components/AuthGuard";       
-import ParentElement from "./ParentElement";      
+import AuthGuard from "./../src/components/AuthGuard";
+import ParentElement from "./ParentElement";
+import AdminParent from "./AdminParent";
 
 const Hero           = lazy(() => import("./../src/pages/Hero"));
 const Login          = lazy(() => import("./../src/pages/Login"));
@@ -15,12 +15,16 @@ const Contact        = lazy(() => import("./../src/pages/Contact"));
 const Subscription   = lazy(() => import("./../src/pages/Subscription"));
 const EmailVerified  = lazy(() => import("./../src/pages/EmailVerified"));
 
+const AdminAnalytics = lazy(() => import("./../src/admin/AdminAnalytics"));
+const AdminDashboard = lazy(() => import("./../src/admin/AdminDashboard"));
+const AdminParts     = lazy(() => import("./../src/admin/AdminParts"));
+const AdminUsers     = lazy(() => import("./../src/admin/AdminUsers"));
+const AdminLogin = lazy(() => import("./../src/admin/AdminLogin"));
+
+
 const suspense = (node) => <Suspense fallback={<Loader />}>{node}</Suspense>;
 
-
 const HomeLayout = () => <Outlet />;
-
-
 
 const GuardedOutlet = () => (
   <AuthGuard>
@@ -29,32 +33,49 @@ const GuardedOutlet = () => (
 );
 
 const router = createBrowserRouter([
+  // ✅ Admin routes
+  {
+  path: "/AdminLogin",
+  element: suspense(<AdminLogin />),
+},
+  {
+    path: "/admin",
+    element: (
+      <Suspense fallback={""}>
+        <AdminParent />
+      </Suspense>
+    ),
+    children: [
+      { index: true, element: suspense(<AdminDashboard />) },
+      { path: "users", element: suspense(<AdminUsers />) },
+      { path: "parts", element: suspense(<AdminParts />) },
+      { path: "analytics", element: suspense(<AdminAnalytics />) },
+    ],
+  },
+
+  // ✅ Public + Protected routes
   {
     path: "/",
     element: suspense(<ParentElement />),
     children: [
-      // public
+      // Public
       { index: true, element: suspense(<Login />) },
       { path: "Signup", element: suspense(<Signup />) },
       { path: "ForgetPassword", element: suspense(<ForgetPassword />) },
       { path: "Reset-Password/:uidb64/:token", element: suspense(<CreatePassword />) },
       { path: "Email-Verified/:uidb64/:token", element: suspense(<EmailVerified />) },
       { path: "Success", element: suspense(<SuccessScreen />) },
-
-      // public Subscription
       { path: "Subscription", element: suspense(<Subscription />) },
-            { path: "Contact", element: suspense(<Contact />) }, 
+      { path: "Contact", element: suspense(<Contact />) },
 
-      // protected area
+      // Protected area
       {
         element: <GuardedOutlet />,
         children: [
           {
             path: "Home",
-            element: <HomeLayout />, // ⬅️ gives /Home its own Outlet
-            children: [
-              { index: true, element: suspense(<Hero />) },
-            ],
+            element: <HomeLayout />,
+            children: [{ index: true, element: suspense(<Hero />) }],
           },
         ],
       },
@@ -63,51 +84,3 @@ const router = createBrowserRouter([
 ]);
 
 export default router;
-
-
-
-
-
- // 🔒 Admin side
-  // {
-  //   path: "/admin",
-  //   element: (
-  //     <Suspense fallback={""}>
-  //       <AdminParent />
-  //     </Suspense>
-  //   ),
-  //   children: [
-  //     {
-  //       index: true,
-  //       element: (
-  //         <Suspense fallback={""}>
-  //           <AdminDashboard />
-  //         </Suspense>
-  //       ),
-  //     },
-  //     {
-  //       path: "users",
-  //       element: (
-  //         <Suspense fallback={""}>
-  //           <AdminUsers />
-  //         </Suspense>
-  //       ),
-  //     },
-  //     {
-  //       path: "parts",
-  //       element: (
-  //         <Suspense fallback={""}>
-  //           <AdminParts />
-  //         </Suspense>
-  //       ),
-  //     },
-  //     {
-  //       path: "analytics",
-  //       element: (
-  //         <Suspense fallback={""}>
-  //           <AdminAnalytics />
-  //         </Suspense>
-  //       ),
-  //     },
-  //   ],
-  // },

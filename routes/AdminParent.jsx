@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
-import AdminSidebar from "../src/components/AdminSIdebar";
+import AdminSidebar from "../src/components/AdminSidebar";
 
 const AdminParent = () => {
   const [open, setOpen] = useState(false);
@@ -43,7 +43,7 @@ const AdminParent = () => {
           flex-1 p-6 
           lg:ml-64   /* 👈 sidebar ke width ke barabar margin */
           transition-all duration-300
-          md:mt-14  /* 👈 mobile topbar ke liye niche push */
+          md:mt-6  /* 👈 mobile topbar ke liye niche push */
       "
       >
         <Outlet />
