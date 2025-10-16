@@ -108,12 +108,15 @@ const Hero = () => {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      // Send your previous style: type=part_number + manufacturer + q
-      const url = new URL(SEARCH_ENDPOINT);
-      url.searchParams.set("type", selectedManufacturer);
-      url.searchParams.set("q", query.trim());
-      url.searchParams.set("page", String(nextPage));
-      url.searchParams.set("page_size", String(perPage));
+            const params = new URLSearchParams({
+              type: selectedManufacturer,
+              q: query.trim(),
+              page: String(nextPage),
+              page_size: String(perPage),
+            });
+
+            const url = `${SEARCH_ENDPOINT}?${params.toString()}`;
+
 
       const res = await fetch(url.toString(), { method: "GET", headers });
       const payload = await res.json();
