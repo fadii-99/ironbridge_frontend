@@ -15,10 +15,8 @@ const Contact        = lazy(() => import("./../src/pages/Contact"));
 const Subscription   = lazy(() => import("./../src/pages/Subscription"));
 const EmailVerified  = lazy(() => import("./../src/pages/EmailVerified"));
 
-const AdminAnalytics = lazy(() => import("./../src/admin/AdminAnalytics"));
 const AdminDashboard = lazy(() => import("./../src/admin/AdminDashboard"));
 const AdminParts     = lazy(() => import("./../src/admin/AdminParts"));
-const AdminUsers     = lazy(() => import("./../src/admin/AdminUsers"));
 const AdminLogin = lazy(() => import("./../src/admin/AdminLogin"));
 
 
@@ -47,9 +45,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: suspense(<AdminDashboard />) },
-      { path: "users", element: suspense(<AdminUsers />) },
       { path: "parts", element: suspense(<AdminParts />) },
-      { path: "analytics", element: suspense(<AdminAnalytics />) },
     ],
   },
 

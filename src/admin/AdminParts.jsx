@@ -148,7 +148,7 @@ const AdminParts = () => {
   }, [searchTerm, parts]);
 
   return (
-    <div className="relative md:mt-0 mt-16">
+    <div className="md:mt-0 mt-16">
       {/* slim scrollbars + prevent header wrapping */}
       <style>{`
         .scroll-x::-webkit-scrollbar{ height:8px }
@@ -167,7 +167,7 @@ const AdminParts = () => {
       </div>
 
       {/* total + search */}
-      <div className="flex flex-col sm:flex-row justify-between items-center my-4 text-gray-300 gap-3 px-3 sm:px-0">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center items-start my-4 text-gray-300 gap-3 px-3 sm:px-0">
         <div className="text-sm text-gray-400">
           Total Parts: <span className="text-yellow-400 font-semibold">{totalCount}</span>
         </div>
@@ -191,14 +191,14 @@ const AdminParts = () => {
       ) : filteredParts.length === 0 ? (
         <div className="flex items-center justify-center h-[40vh] text-gray-400">No parts found.</div>
       ) : (
-        <div className="rounded-lg border border-white/10 overflow-hidden">
+        <div className="rounded-lg border border-white/10">
           {/* 
             OUTER: horizontal scroll for small screens (header + body move together)
             INNER: vertical scroll for body with sticky header
           */}
-          <div className="scroll-x overflow-x-auto">
-            <div className="max-h-[65vh] scroll-y overflow-y-auto">
-              <table className="w-full text-sm text-gray-200 table-auto">
+          <div className="">
+            <div className="max-h-[65vh] max-w-[100vw] scroll-x overflow-x-auto">
+              <table className="w-full text-sm text-gray-200">
                 <thead className="sticky top-0 z-10 bg-black/85 backdrop-blur">
                   <tr className="border-b border-white/10">
                     {columns.map((col) => (

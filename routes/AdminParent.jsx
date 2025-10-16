@@ -40,7 +40,7 @@ const AdminParent = () => {
       {/* Content Area */}
       <main
         className="
-          flex-1 p-6 
+          flex-1 md:p-6 
           lg:ml-64   /* 👈 sidebar ke width ke barabar margin */
           transition-all duration-300
           md:mt-6  /* 👈 mobile topbar ke liye niche push */
