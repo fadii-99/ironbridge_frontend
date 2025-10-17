@@ -168,6 +168,9 @@ const Hero = () => {
       /update/i, // Contains UPDATE keyword
       /drop/i, // Contains DROP keyword
     ];
+
+
+       
     
     const hasInvalidPattern = suspiciousPatterns.some(pattern => pattern.test(query.trim()));
     
