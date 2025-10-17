@@ -151,6 +151,30 @@ const Hero = () => {
     if (!query.trim()) {
       return toast.error("Please enter a part number.");
     }
+    
+    // Check for SQL injection patterns or suspicious query formats
+    const suspiciousPatterns = [
+      /=/,  // Contains equals sign
+      /;/,  // Contains semicolon
+      /'/,  // Contains single quote
+      /"/,  // Contains double quote
+      /--/, // Contains SQL comment
+      /\/\*/, // Contains SQL comment start
+      /\*\//, // Contains SQL comment end
+      /union/i, // Contains UNION keyword
+      /select/i, // Contains SELECT keyword
+      /insert/i, // Contains INSERT keyword
+      /delete/i, // Contains DELETE keyword
+      /update/i, // Contains UPDATE keyword
+      /drop/i, // Contains DROP keyword
+    ];
+    
+    const hasInvalidPattern = suspiciousPatterns.some(pattern => pattern.test(query.trim()));
+    
+    if (hasInvalidPattern) {
+      return toast.error("Invalid characters detected in part number. Please enter a valid part number.");
+    }
+    
     setRows([]);
     setCount(0);
     setTotalPages(0);

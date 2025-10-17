@@ -91,7 +91,7 @@ export default function Navbar() {
         ${scrolled ? "bg-black/90 shadow-lg" : "bg-transparent shadow-none"} text-white`}
       >
         {/* Left: Logo */}
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+        <div className="flex items-center gap-2 cursor-pointer" >
           <img src={logo} alt="website-logo" className="h-auto w-[5.5rem]" />
         </div>
 
