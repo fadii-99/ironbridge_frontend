@@ -32,7 +32,7 @@ const GradientButton = ({
           aria-hidden="true"
         />
       )}
-      <span>{loading ? "Loading..." : label}</span>
+      <span>{label}</span>
     </button>
   );
 };

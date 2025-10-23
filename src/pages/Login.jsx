@@ -58,6 +58,7 @@ const Login = () => {
 
     const email = form.email.trim();
     const password = form.password;
+    const role = 'user';
 
     if (!email && !password) return toast.error("Email and password are required.");
     if (!email) return toast.error("Email is required.");
@@ -69,7 +70,7 @@ const Login = () => {
       const res = await fetch(`${serverUrl}/auth/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, role }),
       });
 
       const raw = await res.text();

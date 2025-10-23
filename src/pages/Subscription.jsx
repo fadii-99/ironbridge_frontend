@@ -9,7 +9,7 @@ const serverUrl = import.meta.env.VITE_SERVER_URL;
 
 const Subscription = () => {
   const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("Access-Token") : null;
   const { user } = useUser(); // <-- yahan se plan_id lo
@@ -34,15 +34,7 @@ const Subscription = () => {
     fetchPlans();
   }, []);
 
-  if (loading) {
-    return (
-      <section className="flex items-center justify-center min-h-screen bg-black text-white">
-        <SmallLoader size={15} />
-      </section>
-    );
-  }
-
-  if (plans.length === 0) {
+  if (plans.length === 0 && !loading) {
     return (
       <section className="flex items-center justify-center min-h-screen text-white">
         <p className="text-gray-300">No subscription plans available at the moment.</p>
