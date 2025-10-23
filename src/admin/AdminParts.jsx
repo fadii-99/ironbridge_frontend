@@ -39,17 +39,25 @@ const AdminParts = () => {
 
   // search
   const [searchTerm, setSearchTerm] = useState("");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // auth
   const token = localStorage.getItem("AdminToken");
   if (!token) return <UnauthorizedAdminModal />;
 
   // fetch
-  const fetchParts = async (pageNumber = 1) => {
+  const fetchParts = async (pageNumber = 1, searchQuery = "") => {
     setLoading(true);
     try {
       const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
-      const res = await fetch(`${serverUrl}/admin/parts/?page=${pageNumber}`, {
+      
+      // Build URL with search parameter if provided
+      let url = `${serverUrl}/admin/parts/?page=${pageNumber}`;
+      if (searchQuery.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery.trim())}`;
+      }
+      
+      const res = await fetch(url, {
         method: "POST",
         headers,
       });
@@ -78,10 +86,20 @@ const AdminParts = () => {
     }
   };
 
+  // Initial load only
   useEffect(() => {
-    fetchParts(page);
+    fetchParts(1, "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, []);
+
+  // Handle search with debouncing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchParts(1, searchTerm); // Reset to page 1 when searching
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   // upload
   const handleUpload = async () => {
@@ -104,7 +122,7 @@ const AdminParts = () => {
       toast.success("File uploaded successfully!");
       setFile(null);
       setModalOpen(false);
-      fetchParts(page);
+      fetchParts(page, searchTerm);
     } catch (err) {
       console.error("❌ Upload Error:", err);
       toast.error(err.message || "Upload failed");
@@ -129,23 +147,17 @@ const AdminParts = () => {
   };
 
   // pagination handlers
-  const goToPrev = () => setPage((p) => Math.max(1, p - 1));
-  const goToNext = () => setPage((p) => Math.min(totalPages, p + 1));
+  const goToPrev = () => {
+    const newPage = Math.max(1, page - 1);
+    setPage(newPage);
+    fetchParts(newPage, searchTerm);
+  };
+  const goToNext = () => {
+    const newPage = Math.min(totalPages, page + 1);
+    setPage(newPage);
+    fetchParts(newPage, searchTerm);
+  };
 
-  // search across all fields
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredParts(parts);
-      return;
-    }
-    const lower = searchTerm.toLowerCase();
-    const filtered = parts.filter((item) =>
-      Object.values(item).some((val) =>
-        val === null || val === undefined ? false : String(val).toLowerCase().includes(lower)
-      )
-    );
-    setFilteredParts(filtered);
-  }, [searchTerm, parts]);
 
   return (
     <div className="md:mt-0 mt-16">
@@ -357,10 +369,10 @@ const AdminParts = () => {
 
       {/* modals */}
       {editPart && (
-        <EditPartModal part={editPart} onClose={() => setEditPart(null)} onSuccess={() => fetchParts(page)} />
+        <EditPartModal part={editPart} onClose={() => setEditPart(null)} onSuccess={() => fetchParts(page, searchTerm)} />
       )}
       {deletePart && (
-        <DeletePartModal part={deletePart} onClose={() => setDeletePart(null)} onSuccess={() => fetchParts(page)} />
+        <DeletePartModal part={deletePart} onClose={() => setDeletePart(null)} onSuccess={() => fetchParts(page, searchTerm)} />
       )}
 
       <ToastContainer position="top-right" theme="dark" autoClose={2500} />

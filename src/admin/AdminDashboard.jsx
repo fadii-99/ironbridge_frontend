@@ -46,9 +46,43 @@ const AdminDashboard = () => {
   const [usageSortDir, setUsageSortDir] = useState("desc"); // 'asc' | 'desc'
   const [usagePage, setUsagePage] = useState(1);
   const [usagePageSize, setUsagePageSize] = useState(10);
+  const [usageData, setUsageData] = useState(null);
+  const [usageLoading, setUsageLoading] = useState(false);
 
   const token = localStorage.getItem("AdminToken");
   if (!token) return <UnauthorizedAdminModal />;
+
+  // Fetch usage data from the new API endpoint
+  const fetchUsageData = async (pageNumber = 1, searchQuery = "") => {
+    setUsageLoading(true);
+    try {
+      let url = `${serverUrl}/admin/usage-per-user/?page=${pageNumber}&page_size=${usagePageSize}`;
+      if (searchQuery.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery.trim())}`;
+      }
+      
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const json = await res.json();
+      
+      if (res.ok && json?.success) {
+        setUsageData(json.data);
+      } else {
+        console.error("Failed to fetch usage data:", json?.error);
+        setUsageData(null);
+      }
+    } catch (e) {
+      console.error("Usage data fetch error:", e);
+      setUsageData(null);
+    } finally {
+      setUsageLoading(false);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -69,6 +103,26 @@ const AdminDashboard = () => {
       }
     })();
   }, []);
+
+  // Fetch usage data when component mounts
+  useEffect(() => {
+    fetchUsageData(usagePage, usageQuery);
+  }, []);
+
+  // Handle search with debouncing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchUsageData(1, usageQuery); // Reset to page 1 when searching
+      setUsagePage(1);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [usageQuery]);
+
+  // Handle page changes
+  useEffect(() => {
+    fetchUsageData(usagePage, usageQuery);
+  }, [usagePage, usagePageSize]);
 
   // ------- Cards --------
   const cards = useMemo(() => {
@@ -231,54 +285,10 @@ const AdminDashboard = () => {
     : [];
 
   // ------- NEW: Usage per User (30d) — searchable, sortable, paginated -------
-  const usageRowsRaw = Array.isArray(data?.usage_pr_user)
-    ? data.usage_pr_user
-    : [];
-
-  const usageTotal = useMemo(
-    () => usageRowsRaw.reduce((acc, r) => acc + Number(r.search_count || 0), 0),
-    [usageRowsRaw]
-  );
-
-  // filter by query
-  const usageFiltered = useMemo(() => {
-    const q = usageQuery.trim().toLowerCase();
-    if (!q) return usageRowsRaw;
-    return usageRowsRaw.filter((r) => {
-      const name = (r.user__full_name || "").toLowerCase();
-      const email = (r.user__email || "").toLowerCase();
-      return name.includes(q) || email.includes(q);
-    });
-  }, [usageQuery, usageRowsRaw]);
-
-  // sort by selected column
-  const usageSorted = useMemo(() => {
-    const rows = [...usageFiltered];
-    rows.sort((a, b) => {
-      const av =
-        usageSortKey === "search_count"
-          ? Number(a.search_count || 0)
-          : String(a[usageSortKey] || "").toLowerCase();
-      const bv =
-        usageSortKey === "search_count"
-          ? Number(b.search_count || 0)
-          : String(b[usageSortKey] || "").toLowerCase();
-      if (av < bv) return usageSortDir === "asc" ? -1 : 1;
-      if (av > bv) return usageSortDir === "asc" ? 1 : -1;
-      return 0;
-    });
-    return rows;
-  }, [usageFiltered, usageSortKey, usageSortDir]);
-
-  // paginate
-  const usageTotalPages = Math.max(
-    1,
-    Math.ceil(usageSorted.length / Math.max(1, usagePageSize))
-  );
-  const usagePageSafe = Math.min(Math.max(1, usagePage), usageTotalPages);
-  const usageSliceStart = (usagePageSafe - 1) * usagePageSize;
-  const usageSliceEnd = usageSliceStart + usagePageSize;
-  const usagePageRows = usageSorted.slice(usageSliceStart, usageSliceEnd);
+  const usageRows = usageData?.results || [];
+  const usageTotal = usageData?.count || 0;
+  const usageTotalPages = usageData?.pages || 1;
+  const usageCurrentPage = usageData?.page || 1;
 
   const toggleSort = (key) => {
     if (usageSortKey === key) {
@@ -288,6 +298,18 @@ const AdminDashboard = () => {
       setUsageSortDir("desc");
     }
     setUsagePage(1);
+    // Note: Server-side sorting is not implemented yet, this is for future enhancement
+  };
+
+  // Pagination handlers
+  const goToPrevPage = () => {
+    const newPage = Math.max(1, usageCurrentPage - 1);
+    setUsagePage(newPage);
+  };
+
+  const goToNextPage = () => {
+    const newPage = Math.min(usageTotalPages, usageCurrentPage + 1);
+    setUsagePage(newPage);
   };
 
   return (
@@ -456,89 +478,92 @@ const AdminDashboard = () => {
             </div>
 
             <div className="overflow-auto">
-              <table className="w-full text-sm">
-                <thead className="text-left text-gray-300">
-                  <tr>
-                    <th className="py-2 pr-3">#</th>
-
-                    <th
-                      className="py-2 pr-3 cursor-pointer select-none"
-                      onClick={() => toggleSort("user__full_name")}
-                      title="Sort by user name"
-                    >
-                      User{" "}
-                      <span className="text-gray-500">
-                        {usageSortKey === "user__full_name"
-                          ? usageSortDir === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </span>
-                    </th>
-
-                    <th
-                      className="py-2 pr-3 cursor-pointer select-none"
-                      onClick={() => toggleSort("user__email")}
-                      title="Sort by email"
-                    >
-                      Email{" "}
-                      <span className="text-gray-500">
-                        {usageSortKey === "user__email"
-                          ? usageSortDir === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </span>
-                    </th>
-
-                    <th
-                      className="py-2 pr-3 text-right cursor-pointer select-none"
-                      onClick={() => toggleSort("search_count")}
-                      title="Sort by searches"
-                    >
-                      Searches{" "}
-                      <span className="text-gray-500">
-                        {usageSortKey === "search_count"
-                          ? usageSortDir === "asc"
-                            ? "▲"
-                            : "▼"
-                          : ""}
-                      </span>
-                    </th>
-
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {usagePageRows.length === 0 ? (
+              {usageLoading ? (
+                <div className="flex justify-center items-center py-8">
+                  <SmallLoader />
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="text-left text-gray-300">
                     <tr>
-                      <td colSpan={5} className="text-gray-400 py-4 text-center">
-                        No data
-                      </td>
+                      <th className="py-2 pr-3">#</th>
+
+                      <th
+                        className="py-2 pr-3 cursor-pointer select-none"
+                        onClick={() => toggleSort("user__full_name")}
+                        title="Sort by user name"
+                      >
+                        User{" "}
+                        <span className="text-gray-500">
+                          {usageSortKey === "user__full_name"
+                            ? usageSortDir === "asc"
+                              ? "▲"
+                              : "▼"
+                            : ""}
+                        </span>
+                      </th>
+
+                      <th
+                        className="py-2 pr-3 cursor-pointer select-none"
+                        onClick={() => toggleSort("user__email")}
+                        title="Sort by email"
+                      >
+                        Email{" "}
+                        <span className="text-gray-500">
+                          {usageSortKey === "user__email"
+                            ? usageSortDir === "asc"
+                              ? "▲"
+                              : "▼"
+                            : ""}
+                        </span>
+                      </th>
+
+                      <th
+                        className="py-2 pr-3 text-right cursor-pointer select-none"
+                        onClick={() => toggleSort("search_count")}
+                        title="Sort by searches"
+                      >
+                        Searches{" "}
+                        <span className="text-gray-500">
+                          {usageSortKey === "search_count"
+                            ? usageSortDir === "asc"
+                              ? "▲"
+                              : "▼"
+                            : ""}
+                        </span>
+                      </th>
+
                     </tr>
-                  ) : (
-                    usagePageRows.map((row, idx) => {
-                      const absoluteIndex =
-                        (usagePageSafe - 1) * usagePageSize + idx + 1;
-                      const count = Number(row.search_count || 0);
-                      const pct =
-                        usageTotal > 0 ? ((count / usageTotal) * 100).toFixed(1) : "0.0";
-                      return (
-                        <tr key={`${row.user__email}-${absoluteIndex}`} className="border-t border-white/10">
-                          <td className="py-2 pr-3 text-gray-400">{absoluteIndex}</td>
-                          <td className="py-2 pr-3 capitalize">
-                            {row.user__full_name || "-"}
-                          </td>
-                          <td className="py-2 pr-3">{row.user__email}</td>
-                          <td className="py-2 pr-3 text-right font-semibold">
-                            {count}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+
+                  <tbody>
+                    {usageRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="text-gray-400 py-4 text-center">
+                          No data
+                        </td>
+                      </tr>
+                    ) : (
+                      usageRows.map((row, idx) => {
+                        const absoluteIndex = (usageCurrentPage - 1) * usagePageSize + idx + 1;
+                        const count = Number(row.search_count || 0);
+                        return (
+                          <tr key={`${row.user__email}-${absoluteIndex}`} className="border-t border-white/10">
+                            <td className="py-2 pr-3 text-gray-400">{absoluteIndex}</td>
+                            <td className="py-2 pr-3 capitalize">
+                              {row.user__full_name || "-"}
+                            </td>
+                            <td className="py-2 pr-3">{row.user__email}</td>
+                            <td className="py-2 pr-3 text-right font-semibold">
+                              {count}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
 
             {/* Pagination controls */}
@@ -546,22 +571,22 @@ const AdminDashboard = () => {
               <div className="text-gray-400 text-sm">
                 Showing{" "}
                 <span className="text-white">
-                  {usagePageRows.length > 0
-                    ? usageSliceStart + 1
+                  {usageRows.length > 0
+                    ? (usageCurrentPage - 1) * usagePageSize + 1
                     : 0}
                   {" - "}
-                  {usageSliceStart + usagePageRows.length}
+                  {(usageCurrentPage - 1) * usagePageSize + usageRows.length}
                 </span>{" "}
                 of{" "}
-                <span className="text-white">{usageSorted.length}</span>
+                <span className="text-white">{usageTotal}</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setUsagePage((p) => Math.max(1, p - 1))}
-                  disabled={usagePageSafe === 1}
+                  onClick={goToPrevPage}
+                  disabled={usageCurrentPage === 1}
                   className={`px-3 py-1.5 rounded-lg border ${
-                    usagePageSafe === 1
+                    usageCurrentPage === 1
                       ? "border-white/10 text-gray-500 cursor-not-allowed"
                       : "border-white/20 text-gray-200 hover:bg-white/10"
                   }`}
@@ -569,15 +594,13 @@ const AdminDashboard = () => {
                   <HiChevronLeft />
                 </button>
                 <span className="text-gray-300 text-sm">
-                  Page {usagePageSafe} / {usageTotalPages}
+                  Page {usageCurrentPage} / {usageTotalPages}
                 </span>
                 <button
-                  onClick={() =>
-                    setUsagePage((p) => Math.min(usageTotalPages, p + 1))
-                  }
-                  disabled={usagePageSafe >= usageTotalPages}
+                  onClick={goToNextPage}
+                  disabled={usageCurrentPage >= usageTotalPages}
                   className={`px-3 py-1.5 rounded-lg border ${
-                    usagePageSafe >= usageTotalPages
+                    usageCurrentPage >= usageTotalPages
                       ? "border-white/10 text-gray-500 cursor-not-allowed"
                       : "border-white/20 text-gray-200 hover:bg-white/10"
                   }`}
