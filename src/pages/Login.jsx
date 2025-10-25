@@ -99,7 +99,7 @@ const Login = () => {
   return (
     <>
       <div className="flex items-center justify-center min-h-screen text-white pt-20">
-        <div className="w-full max-w-md bg-black/80 border border-white/20 p-8 rounded-xl shadow-lg text-center">
+        <div className="w-full md:max-w-lg bg-black/80 border border-white/20 p-8 rounded-xl shadow-lg text-center">
           <div className="flex justify-center mb-8">
             <img src={logo} alt="website-logo" className="h-auto w-[8rem]" />
           </div>
@@ -160,12 +160,16 @@ const Login = () => {
             />
           </form>
 
-          <p className="mt-6 text-xs text-gray-400">
+          <p className="mt-6 text-xs text-gray-400 pb-4">
             Don’t have an account?{" "}
             <Link to="/Signup" className="text-yellow-400 hover:underline">
               Sign Up
             </Link>
           </p>
+           <p className="text-xs text-gray-300 leading-relaxed text-start pt-4 border-t border-white/20">
+            <span className="text-yellow-400" >-</span> A powerful tool to quickly search and reference industrial products. <br />
+           <span className="text-yellow-400" >-</span> Search faster. Cross-reference smarter. Streamline sourcing.
+        </p>
         </div>
       </div>
 
